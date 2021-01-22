@@ -1,6 +1,6 @@
 function init() {
   // Grab a reference to the dropdown select element
-  
+  var url = 'http://127.0.0.1:5000/'
 
   // Use the list of sample names to populate the select options
   d3.json("/samples").then((data) => {
@@ -25,7 +25,3 @@ function init() {
 
 // Initialize the dashboard
 init();
-
-
-
-var url = 'http://127.0.0.1:5000/'

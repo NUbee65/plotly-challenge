@@ -1,5 +1,5 @@
 import json
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify # url_for, send_file
 
 app = Flask(__name__)
 
@@ -7,22 +7,19 @@ app = Flask(__name__)
 def index():
 
     # use render_template to serve up the index.html
-    return(render_template('index.html', samples_data=samples_data))
+    return render_template('index.html')
 
 @app.route("/samples")
-def samples():
+def samples():    
 
     # open the json file, located at static/data/samples.json    
-    with open('Instructions/StarterCode/static/data/samples.json') as f:
+    with open('static/data/samples.json') as samples_data_uploaded:
         
         # use json.load() to read in the file as json
-        samples_data = json.load(f)
-    
+        samples_data = json.load(samples_data_uploaded)
 
     # return that json through the Flask endpoint
-    return jsonify(samples_data)
+    return (samples_data)
     
-    return redirect('/')
-
 if __name__ == "__main__":
     app.run(debug=True)
