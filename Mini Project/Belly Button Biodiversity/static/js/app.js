@@ -1,11 +1,30 @@
 // var url = "http://127.0.0:1:5000/samples"
 var url = "/samples"
 d3.json(url).then((samplesData) => {
-  console.log(samplesData)
-}
+  console.log(`-- Inside --`);
+  console.log(samplesData);
+  console.log(samplesData.metadata)
+});
+
+console.log(`-- Outside --`);
+console.log(samplesData);
 
 /*
-function init(){
+function init() {
+  // Grab a reference to the dropdown select element
+  var dataset = selDataset.property("value");
+
+  // Use the list of sample names to populate the select options
+  d3.json("/samples").then((data) => {
+    
+    // your-code-here
+
+    // Use the first sample from the list to build the initial plots
+  });
+}
+*/
+
+  /*
 
   // Beginning Horizontal Bar
   var barData = [{
@@ -57,5 +76,9 @@ function init(){
   Plotly.newPlot('bubble', bubbleData, layout);
   // End Bubble Chart
 
-}
+  
+
+};
 */
+
+init();
