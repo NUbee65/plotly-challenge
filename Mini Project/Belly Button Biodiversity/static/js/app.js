@@ -26,17 +26,19 @@ function populateSelect() {
     console.log("testing subjectIds");
     console.log(subjectIds);
 
+    // Use D3 to select / alias the selector button and option field
+    var selectList = d3.select('selDataset');
+
     // Iterate through each object in an array of objects
-    subjectIds3.forEach((item) => {
+    subjectIds3.forEach(item => {      
 
-      // Use D3 to select the table body
-      var selectValue = d3.select('selDataset');
+      var option = selectList.append('option');
 
-      // Append one cell for the ufo incidentcity
-      selectValue.append('option').text(item);
+      option.append('option').text(item['names']);
+      option.append('option').value(item['names']);      
 
   });
-};
+});
 
 populateSelect();
 
@@ -57,10 +59,11 @@ populateSelect();
   
 
 
-
+/*
 
 // Identify web element(s) on the page
 selectbtn = d3.select('#selDataset');
 
 // Add event listeners to the web elements
 // selectbtn.on('change', FUNCTION_TBD);
+*/
