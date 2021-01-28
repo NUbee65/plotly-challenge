@@ -198,12 +198,44 @@ function extract(inputValue) {
 
     // BEGINNING ASSAY DATA PROCESSING -- RETURN ONLY ASSAY DATA FOR SPECIFIED TEST SUBJECT
     var assaysSamplesdata = samplesData.samples
-    var individualSampledata = assaysSamplesdata.filter(obj => obj.id == inputValue);
+    var assaysSampledataSlice = assaysSamplesdata.filter(obj => obj.id == inputValue);
+    var individualSampledata = assaysSampledataSlice[0];
     console.log("--- testing individualSampledata ---");
     console.log(individualSampledata);
 
-    individualSampledata[0]((obj => obj.sample_values.sort((firstValue, secondValue) => secondValue - firstValue)));
-    console.log(individualSampledata);
+    var sampleValuesArray = individualSampledata.sample_values;
+    console.log(sampleValuesArray);
+
+    var sortedSampleValuesArray = sampleValuesArray.sort((firstValue, secondValue) => secondValue - firstValue);
+    console.log(sortedSampleValuesArray)
+
+
+    var otuIdsArray = individualSampledata.otu_ids
+    var otuLabelsArray = individualSampledata.otu_labels
+    
+    /*
+    // Delete keys that will not be searched for -- eliminating keys that are not arrays
+    Object.keys(individualSampledata).forEach(function(key) => {
+        if(individualSampledata.key){
+            delete individualSampledata[key];
+        }
+    });
+
+    */
+
+
+
+
+
+    /*
+    Object.keys(dictionary).forEach(function(key) {
+         and here have an if condition to check if the key holds an array
+     }); 
+    */
+    // use indexOf function on the sorted array
+
+
+    // logic can be used to query a key to determine if it is an Array?
 
 
 
