@@ -4,7 +4,7 @@ var url = "/samples"
 var textArray = ['', '0-1', '1-2', '2-3', '3-4', '4-5', '5-6', '6-7', '7-8', '8-9'];
 reversedTextArray = textArray.reverse();
 console.log(reversedTextArray);
-
+// ------------------------------------------------------------------------------------------------------
 
 function populateSelect() {
 
@@ -47,8 +47,15 @@ function populateSelect() {
       // I had mistakenly tried to use the append method here.  Doh!
       option.text(item).property("value", item);
     });
+
+    // CALCULATE LOWEST SUBJECT ID VALUE
+    var minSubjectId = Math.min(...subjectIds);
+    console.log("--- testing minSubjectId ---");
+    console.log(minSubjectId);
+
   });
 }
+// ------------------------------------------------------------------------------------------------------
 
 populateSelect();
 
@@ -113,6 +120,7 @@ function extract(inputValue) {
 
     console.log(panelKeysValues);
     // END OF METADATA DATA PROCESSING
+    // ------------------------------------------------------------------------------------------------------
 
 
     // BEGINNING OF POPULATING SELECTED SAMPLE METADATA INTO WEB PAGE PANEL
@@ -131,6 +139,7 @@ function extract(inputValue) {
       panelBody.append("h6").text(item);
     });    
     // END OF POPULATING SELECTED SAMPLE METADATA INTO WEB PAGE PANEL
+    // ------------------------------------------------------------------------------------------------------
 
 
     // BEGINNING OF GUAGE PLOT -- INCLUDING POPULATING SELECTED SAMPLE WFREQ INTO 
@@ -197,6 +206,7 @@ function extract(inputValue) {
 
     Plotly.newPlot('gauge', data, layout);
     // END OF GUAGE PLOT -- INCLUDING POPULATING SELECTED SAMPLE WFREQ INTO
+    // ------------------------------------------------------------------------------------------------------
 
 
     // BEGINNING ASSAY DATA PROCESSING -- RETURN ONLY ASSAY DATA FOR SPECIFIED TEST SUBJECT
@@ -245,24 +255,35 @@ function extract(inputValue) {
     // Further modify ReversedSlicedOtuIds by adding a text heading (OTU)
     var modifiedOtuIds = [];
     ReversedSlicedOtuIds.forEach(item => {      
-      modifiedOtuIds.append(`OTU ${ReversedSlicedOtuIds}`);
+      modifiedOtuIds.push(`OTU ${item}`);
     });
 
     console.log("--- testing modifiedOtuIds ---");
     console.log(modifiedOtuIds);
+
+    var maxSampleValue = Math.max(...sampleValuesArray);
+    var minSampleValue = Math.min(...sampleValuesArray);
+    
+    // CALCULATE LOWEST AND HIGHEST SINGLE SUBJECT SAMPLE VALUES
+    console.log("--- testing maxSampleValue ---");
+    console.log(maxSampleValue);
+    console.log("--- testing minSampleValue ---");
+    console.log(minSampleValue);
     // END OF ASSAY DATA PROCESSING -- RETURN ONLY ASSAY DATA FOR SPECIFIED TEST SUBJECT
+    // ------------------------------------------------------------------------------------------------------
 
 
     // BEGINNING OF HORIZONTAL BAR CHART PLOT
     var barData = [{
       type: 'bar',    
-      x: ReversedSlicedSampleValuesArray,
-      y: ReversedSlicedOtuIdsArray,
+      x: ReversedSlicedSampleValues,
+      y: modifiedOtuIds,
       orientation: 'h'
     }];
 
     Plotly.newPlot('bar', barData);
     // END OF HORIZONTAL BAR CHART PLOT
+    // ------------------------------------------------------------------------------------------------------
 
 
     // BEGINNING OF BUBBLE CHART PLOT
@@ -288,11 +309,11 @@ function extract(inputValue) {
     
     Plotly.newPlot('bubble', bubbleData, layout);
     // END OF BUBBLE CHART PLOT
+    // ------------------------------------------------------------------------------------------------------
 
   });
 
   
-
 };
 
 
