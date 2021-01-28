@@ -116,17 +116,20 @@ function extract(inputValue) {
 
 
     // BEGINNING OF POPULATING SELECTED SAMPLE METADATA INTO WEB PAGE PANEL
-    // Identify the table and tbody
-
-    /*
+    
+        // Identify the panel div by ID (metadata) and panel-body
+    // and assign the HTML object it the variable name panelBody
     var panelBody = d3.select('#metadata');
 
-    panelKeysValues.forEach(item => {
-      var row = panelBody.append('tr');
-      option.text(item).property("value", item);
-    });
-    */
+    // Clear out the panel panel-body before rebuilding the panel with new metadata
+    panelBody.html('');
 
+    // For each panelBody (item) in paneKeysValues,
+    // append an HTML header (h6) to the HTML panel-body and
+    // add text that corresponds to that item.    
+    panelKeysValues.forEach(item => {
+      panelBody.append("h6").text(item);
+    });    
     // END OF POPULATING SELECTED SAMPLE METADATA INTO WEB PAGE PANEL
 
 
@@ -203,46 +206,88 @@ function extract(inputValue) {
     console.log("--- testing individualSampledata ---");
     console.log(individualSampledata);
 
+    // Extract simple Arrays from 3 of the 4 keys in the samplesData Object 
+    var otuIdsArray = individualSampledata.otu_ids;
+    var otuLabelsArray = individualSampledata.otu_labels;
     var sampleValuesArray = individualSampledata.sample_values;
+    
+    // Test that we extacted simple Arrays
+    console.log("--- testing otuIdsArray ---");
+    console.log(otuIdsArray);
+    console.log("--- testing otuLabelsArray ---");
+    console.log(otuLabelsArray);
+    console.log("--- testing sampleValuesArray ---");
     console.log(sampleValuesArray);
 
+    // Simple sort of sample_values Array    
     var sortedSampleValuesArray = sampleValuesArray.sort((firstValue, secondValue) => secondValue - firstValue);
+    console.log("--- testing sortedSampleValuesArray ---");
     console.log(sortedSampleValuesArray)
 
+    // Slice each of the 3 Arrays
+    var slicedOtuIdsArray = otuIdsArray.slice(0, 10);
+    var slicedOtuLabelsArray = otuLabelsArray.slice(0, 10);
+    var slicedSampleValuesArray = sampleValuesArray.slice(0, 10);
 
-    var otuIdsArray = individualSampledata.otu_ids
-    var otuLabelsArray = individualSampledata.otu_labels
-    
-    /*
-    // Delete keys that will not be searched for -- eliminating keys that are not arrays
-    Object.keys(individualSampledata).forEach(function(key) => {
-        if(individualSampledata.key){
-            delete individualSampledata[key];
-        }
+    // Reversed slice each of the 3 Arrays
+    var ReversedSlicedOtuIds = slicedOtuIdsArray.reverse();
+    var ReversedSlicedOtuLabels = slicedOtuLabelsArray.reverse();
+    var ReversedSlicedSampleValues = slicedSampleValuesArray.reverse();
+
+    // Test that we correctly sliced and reversed the simple Arrays
+    console.log("--- testing ReversedSlicedOtuIds ---");
+    console.log(ReversedSlicedOtuIds);
+    console.log("--- testing ReversedSlicedOtuLabels ---");
+    console.log(ReversedSlicedOtuLabels);
+    console.log("--- testing ReversedSlicedSampleValues ---");
+    console.log(ReversedSlicedSampleValues);
+
+    // Further modify ReversedSlicedOtuIds by adding a text heading (OTU)
+    var modifiedOtuIds = [];
+    ReversedSlicedOtuIds.forEach(item => {      
+      modifiedOtuIds.append(`OTU ${ReversedSlicedOtuIds}`);
     });
 
-    */
-
-
-
-
-
-    /*
-    Object.keys(dictionary).forEach(function(key) {
-         and here have an if condition to check if the key holds an array
-     }); 
-    */
-    // use indexOf function on the sorted array
-
-
-    // logic can be used to query a key to determine if it is an Array?
-
-
-
+    console.log("--- testing modifiedOtuIds ---");
+    console.log(modifiedOtuIds);
     // END OF ASSAY DATA PROCESSING -- RETURN ONLY ASSAY DATA FOR SPECIFIED TEST SUBJECT
 
 
-    // BEGINNING METADATA DATA PROCESSING -- RETURN ONLY METADATA FOR SPECIFIED TEST SUBJECT
+    // BEGINNING OF HORIZONTAL BAR CHART PLOT
+    var barData = [{
+      type: 'bar',    
+      x: ReversedSlicedSampleValuesArray,
+      y: ReversedSlicedOtuIdsArray,
+      orientation: 'h'
+    }];
+
+    Plotly.newPlot('bar', barData);
+    // END OF HORIZONTAL BAR CHART PLOT
+
+
+    // BEGINNING OF BUBBLE CHART PLOT
+    var trace1 = {
+      x: [1, 2, 3, 4],
+      y: [10, 11, 12, 13],
+      text: ['A<br>size: 40', 'B<br>size: 60', 'C<br>size: 80', 'D<br>size: 100'],
+      mode: 'markers',
+      marker: {
+        color: ['rgb(93, 164, 214)', 'rgb(255, 144, 14)',  'rgb(44, 160, 101)', 'rgb(255, 65, 54)'],
+        size: [40, 60, 80, 100]
+      }
+    };
+  
+    var bubbleData = [trace1];
+    
+    var layout = {
+      title: 'Bubble Chart Hover Text',
+      showlegend: false,
+      height: 600,
+      width: 1200
+    };
+    
+    Plotly.newPlot('bubble', bubbleData, layout);
+    // END OF BUBBLE CHART PLOT
 
   });
 

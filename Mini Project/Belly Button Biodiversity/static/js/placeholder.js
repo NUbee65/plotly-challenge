@@ -1,5 +1,29 @@
+individualSampledata[0]((obj => obj.sample_values.sort((firstValue, secondValue) => secondValue - firstValue)));
+console.log(individualSampledata);
 
 
+/*
+    panelKeysValues.forEach(item => {
+      var row = panelBody.append('tr');
+      option.text(item).property("value", item);
+    });
+    */
+
+
+    // Delete keys that will not be searched for -- eliminating keys that are not arrays
+    Object.keys(individualSampledata).forEach(function(key) => {
+      if(individualSampledata.key){
+          delete individualSampledata[key];
+      }
+  });
+
+      Object.keys(dictionary).forEach(function(key) {
+       and here have an if condition to check if the key holds an array
+   }); 
+  */
+  // use indexOf function on the sorted array
+  // logic can be used to query a key to determine if it is an Array?
+  
 
 /*
 //Beginning Horizontal Bar
