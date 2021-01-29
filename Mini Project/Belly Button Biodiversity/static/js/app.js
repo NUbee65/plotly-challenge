@@ -220,7 +220,7 @@ function extract(inputValue) {
     var otuIdsArray = individualSampledata.otu_ids;
     var otuLabelsArray = individualSampledata.otu_labels;
     var sampleValuesArray = individualSampledata.sample_values;
-    
+
     // Test that we extacted simple Arrays
     console.log("--- testing otuIdsArray ---");
     console.log(otuIdsArray);
@@ -229,12 +229,13 @@ function extract(inputValue) {
     console.log("--- testing sampleValuesArray ---");
     console.log(sampleValuesArray);
 
-    // Simple sort of sample_values Array    
-    var sortedSampleValuesArray = sampleValuesArray.sort((firstValue, secondValue) => secondValue - firstValue);
-    console.log("--- testing sortedSampleValuesArray ---");
-    console.log(sortedSampleValuesArray)
-
-    // Slice each of the 3 Arrays
+    // Calculate the number of OTUs in a particular individualSampledata
+    var individualSampleLength = otuIdsArray.length;
+    console.log("--- testing individualSampleLength ---");
+    console.log(individualSampleLength);
+    
+    // Slice each of the 3 Arrays -- IN THIS CASE, THE DATASET WAS ALREADY SORTED
+    // WE ULTIMATELY DECIDED TO SORT THE DATASET AND VERIFY THE SORT (FURTHER BELOW)
     var slicedOtuIdsArray = otuIdsArray.slice(0, 10);
     var slicedOtuLabelsArray = otuLabelsArray.slice(0, 10);
     var slicedSampleValuesArray = sampleValuesArray.slice(0, 10);
@@ -270,7 +271,7 @@ function extract(inputValue) {
     console.log("--- testing minSampleValue ---");
     console.log(minSampleValue);
 
-    // Alternative Path -- We sort the data arrays in samples
+    // SUPERIOR ALTERNATIVE PATH -- SORTS the data arrays in samples
     
     /*
     var otuIdsArray = individualSampledata.otu_ids;
@@ -285,19 +286,57 @@ function extract(inputValue) {
         sample_values: sampleValuesArray[index]
       }
     });
-
     console.log("--- testing sampleArrayOfObjects ---");
     console.log(sampleArrayOfObjects)
 
-    var sortedLtHSampleAofO = sampleArrayOfObjects.sort((a, b) => a.sample_values - b.sample_values);
+    // PROOF that the sort operation works by sorting a descending dataset into an ascending one
+    var ascendingSample = sampleArrayOfObjects.slice().sort((a, b) => (a.sample_values > b.sample_values) ? 1 : -1);
+    console.log("--- testing ascendingSample ---");
+    console.log(ascendingSample);
 
-    console.log("--- testing sortedLtHSampleAofO L2H ---");
-    console.log(sortedLtHSampleAofO)
+    // SORT the dataset (Array of Objects) by one key (sample_values) in descending order
+    var descendingSample = sampleArrayOfObjects.slice().sort((a, b) => (a.sample_values > b.sample_values) ? -1 : 1)
+    console.log("--- testing descendingSample ---");
+    console.log(descendingSample);    
 
-    var sortedHtLSampleAofO = sampleArrayOfObjects.sort((a, b) => b.sample_values - a.sample_values);
+    // EXTRACT an array for each of the keys in the Array of Objects
+    var otuIds = descendingSample.map(obj => obj.otu_ids);
+    var otuLabels = descendingSample.map(obj => obj.otu_labels);
+    var sampleValues = descendingSample.map(obj => obj.sample_values);
 
-    console.log("--- testing sortedHtLSampleAofO H2L ---");
-    console.log(sortedHtLSampleAofO)    
+    console.log("--- testing otuIds Array ---");
+    console.log(otuIds);
+    console.log("--- testing otuLabels Array ---");
+    console.log(otuLabels);
+    console.log("--- testing sampleValues Array ---");
+    console.log(sampleValues);
+
+    // Slice each of the 3 Arrays
+    var slicedOtuIds = otuIds.slice(0, 10);
+    var slicedOtuLabels = otuLabels.slice(0, 10);
+    var slicedSampleValues = sampleValues.slice(0, 10);
+
+    // Reversed slice each of the 3 Arrays
+    var ReversedSlicedOtuIds2 = slicedOtuIds.reverse();
+    var ReversedSlicedOtuLabels2 = slicedOtuLabels.reverse();
+    var ReversedSlicedSampleValues2 = slicedSampleValues.reverse();
+
+    // Test that we correctly sliced and reversed the simple Arrays
+    console.log("--- testing ReversedSlicedOtuIds ---");
+    console.log(ReversedSlicedOtuIds2);
+    console.log("--- testing ReversedSlicedOtuLabels ---");
+    console.log(ReversedSlicedOtuLabels2);
+    console.log("--- testing ReversedSlicedSampleValues ---");
+    console.log(ReversedSlicedSampleValues2);
+
+    // Further modify ReversedSlicedOtuIds by adding a text heading (OTU)
+    var modifiedOtuIds2 = [];
+    ReversedSlicedOtuIds2.forEach(item => {      
+      modifiedOtuIds2.push(`OTU ${item}`);
+    });
+
+    console.log("--- testing modifiedOtuIds2 ---");
+    console.log(modifiedOtuIds2);
 
 
     // END OF ASSAY DATA PROCESSING -- RETURN ONLY ASSAY DATA FOR SPECIFIED TEST SUBJECT
@@ -307,8 +346,8 @@ function extract(inputValue) {
     // BEGINNING OF HORIZONTAL BAR CHART PLOT
     var barData = [{
       type: 'bar',    
-      x: ReversedSlicedSampleValues,
-      y: modifiedOtuIds,
+      x: ReversedSlicedSampleValues2,
+      y: modifiedOtuIds2,
       orientation: 'h'
     }];
 
@@ -318,6 +357,51 @@ function extract(inputValue) {
 
 
     // BEGINNING OF BUBBLE CHART PLOT
+
+    // Using a JS library called RainbowVis-JS, set the number of items using setNumberRange
+    // and set the start and end colour using setSpectrum. Then you get the hex colour code 
+    // with colourAt.
+
+    var numberOfItems = individualSampleLength;
+    var rainbow = new Rainbow();
+    var colorArray = [];
+    rainbow.setNumberRange(1, numberOfItems);
+    rainbow.setSpectrum('red', 'blue');
+    var s = '';
+    for (var i = 1; i <= numberOfItems; i++) {
+        var hexColour = rainbow.colourAt(i);
+        var colorCode = s += '#' + hexColour + ', ';
+        colorArray.push(colorCode);
+    }
+    console.log(s);
+    console.log(colorArray);
+    
+    // Set marker (circle) size with maximum relative value = 1000
+
+    // Calculate maximum Sample Value across All Samples
+
+    var assaysSamplesdata = samplesData.samples;
+    console.log("--- testing assaysSamplesdata ---");
+    console.log(assaysSamplesdata)
+
+
+    var maxSampleValues = [];
+    assaysSamplesdata.forEach(sampleValuesArrayX => {
+      var maxSampleValueX =  Math.max(...sampleValuesArrayX);
+      maxSampleValues.push(maxSampleValueX);
+    });
+
+    console.log("--- testing maxSampleValues Array ---");
+    console.log(maxSampleValues);
+
+    var maxValueAbsolute =  Math.max(...maxSampleValues); 
+
+    console.log("--- Maximum Sample Value Across All Samples ---");
+    console.log(maxValueAbsolute);
+
+
+    // Plot the bubble chart
+
     var trace1 = {
       x: [1, 2, 3, 4],
       y: [10, 11, 12, 13],
