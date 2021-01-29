@@ -264,11 +264,42 @@ function extract(inputValue) {
     var maxSampleValue = Math.max(...sampleValuesArray);
     var minSampleValue = Math.min(...sampleValuesArray);
     
-    // CALCULATE LOWEST AND HIGHEST SINGLE SUBJECT SAMPLE VALUES
+    // Calculate lowest and highest single subject sample values
     console.log("--- testing maxSampleValue ---");
     console.log(maxSampleValue);
     console.log("--- testing minSampleValue ---");
     console.log(minSampleValue);
+
+    // Alternative Path -- We sort the data arrays in samples
+    
+    /*
+    var otuIdsArray = individualSampledata.otu_ids;
+    var otuLabelsArray = individualSampledata.otu_labels;
+    var sampleValuesArray = individualSampledata.sample_values;
+    */
+
+    var sampleArrayOfObjects = otuIdsArray.map((otuIdsArray, index) => {
+      return {
+        otu_ids: otuIdsArray,
+        otu_labels: otuLabelsArray[index],
+        sample_values: sampleValuesArray[index]
+      }
+    });
+
+    console.log("--- testing sampleArrayOfObjects ---");
+    console.log(sampleArrayOfObjects)
+
+    var sortedLtHSampleAofO = sampleArrayOfObjects.sort((a, b) => a.sample_values - b.sample_values);
+
+    console.log("--- testing sortedLtHSampleAofO L2H ---");
+    console.log(sortedLtHSampleAofO)
+
+    var sortedHtLSampleAofO = sampleArrayOfObjects.sort((a, b) => b.sample_values - a.sample_values);
+
+    console.log("--- testing sortedHtLSampleAofO H2L ---");
+    console.log(sortedHtLSampleAofO)    
+
+
     // END OF ASSAY DATA PROCESSING -- RETURN ONLY ASSAY DATA FOR SPECIFIED TEST SUBJECT
     // ------------------------------------------------------------------------------------------------------
 
