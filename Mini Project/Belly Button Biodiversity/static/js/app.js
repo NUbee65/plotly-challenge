@@ -415,8 +415,7 @@ function extract(inputValue) {
     // ------------------------------------------------------------------------------------------------------
 
 
-    // BEGINNING OF CREATING VALUES FOR BUBBLE CHART PLOT MARKER LABELS
-
+    // BEGINNING OF CREATING BUBBLE CHART PLOT MARKER LABELS
     compositeLabels = [];
 
     console.log("--- ANOTHER DAMNED TEST ---");
@@ -432,7 +431,7 @@ function extract(inputValue) {
 
     console.log("--- testing compositeLabels ---");
     console.log(compositeLabels);
-
+    // END OF CREATING BUBBLE CHART PLOT MARKER LABELS
     
 
     // BEGINNING OF BUBBLE CHART PLOT
