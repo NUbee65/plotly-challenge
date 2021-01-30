@@ -1,6 +1,24 @@
 // var url = "http://127.0.0:1:5000/samples"
 var url = "/samples"
 
+function init() {
+  console.log("--- PROOF THE INIT FUNCTION IS AWAKE ---");
+  // Receive lowestInputValue (lowest Subject ID value) from 
+  // calcLowestId() function (which starts on line 66), which itself is 
+  // inside function populateSelect() which starts on line 20.
+  // Then substitute the value of the above variable for inputValue, 
+  // which is used right from the get-go by the function extract(),
+  // which starts on line 95.
+  // We should use -- function updatePlotly() { -- when a dropdown item
+  // is selected.  Either an existing function needs to be renamed, or
+  // a new funtion with this name needs to be built.
+  // Once all that is done, I need to work on the CSS style sheet.
+  // The splash portion / container needs to be reformatted.
+  // The selector / metadata panel also needs to be reformatted.
+  // And then it all will need to be adapted for media queries.
+}
+
+// RESULTS FROM THIS OPERATION ON AN ARRAY ARE USED BY THE GUAGE PLOT BELOW
 var textArray = ['', '0-1', '1-2', '2-3', '3-4', '4-5', '5-6', '6-7', '7-8', '8-9'];
 reversedTextArray = textArray.reverse();
 console.log(reversedTextArray);
@@ -53,6 +71,14 @@ function populateSelect() {
     console.log("--- testing minSubjectId ---");
     console.log(minSubjectId);
 
+    function calcLowestId(){
+      var minSubjectId = Math.min(...subjectIds);
+      var lowestInputValue = minSubjectId;
+      console.log(lowestInputValue);
+      // CRITICAL: The calcLowestId function passes the captured input value to another function "init"
+      init(lowestInputValue);
+    }
+    calcLowestId();
   });
 }
 // ------------------------------------------------------------------------------------------------------
@@ -297,7 +323,7 @@ function extract(inputValue) {
     // SORT the dataset (Array of Objects) by one key (sample_values) in descending order
     var descendingSample = sampleArrayOfObjects.slice().sort((a, b) => (a.sample_values > b.sample_values) ? -1 : 1)
     console.log("--- testing descendingSample ---");
-    console.log(descendingSample);    
+    console.log(descendingSample);
 
     // EXTRACT an array for each of the keys in the Array of Objects
     var otuIds = descendingSample.map(obj => obj.otu_ids);
@@ -369,7 +395,7 @@ function extract(inputValue) {
     var rainbow = new Rainbow();
     var colorArray = [];
     rainbow.setNumberRange(1, numberOfItems);
-    rainbow.setSpectrum('blue', 'yellow');
+    rainbow.setSpectrum('blue', 'green');
     var s = '';
     for (var i = 1; i <= numberOfItems; i++) {
         var hexColour = rainbow.colourAt(i);
@@ -378,6 +404,39 @@ function extract(inputValue) {
     }
     console.log(s);
     console.log(colorArray);
+
+    // SORT the dataset (Array of Objects) by one key (otu_ids) in ascending order
+    var sampleAscendingIDs = sampleArrayOfObjects.slice().sort((a, b) => (a.otu_ids > b.otu_ids) ? 1 : -1)
+    console.log("--- testing sampleAscendingIDs ---");
+    console.log(sampleAscendingIDs);
+
+    // Extract simple Arrays from all 3 of the keys in the sampleAscendingIDs Object 
+    var otuIdsArrayZ = sampleAscendingIDs.map(obj => obj.otu_ids);
+    var otuLabelsArrayZ = sampleAscendingIDs.map(obj => obj.otu_labels);
+    var sampleValuesArrayZ = sampleAscendingIDs.map(obj => obj.sample_values);
+    
+    console.log("--- testing otuIdsArrayZ ---");
+    console.log(otuIdsArrayZ);
+    console.log("--- testing otuLabelsArrayZ ---");
+    console.log(otuLabelsArrayZ);
+    console.log("--- testing sampleValuesArrayZ ---");
+    console.log(sampleValuesArrayZ);
+
+    /* TOTALLY UNNECESSARY. IT WAS REDUNDANT AND CLUNKY.  GOOD LEARNING EXPERIENCE.
+    // Zipping / merging sorted arrays back together while appending colorArray
+    // Critical to ensure scaled colors assigned are ordered according to ascending otu_ids
+    var sampleAofOwColor = sampleAscendingIDs.map((otuIdsArrayZ, index) => {
+      return {
+        otu_ids: otuIdsArrayZ,
+        otu_labels: otuLabelsArrayZ[index],
+        sample_values: sampleValuesArrayZ[index],
+        color_ids: colorArray[index]
+      }
+    });
+    console.log("--- testing sampleAofOwColor ---");
+    console.log(sampleAofOwColor)
+    */
+
     // END OF PREPARING BUBBLE CHART ARRAY OF COLORS FOR CIRCLES
     // ------------------------------------------------------------------------------------------------------
 
@@ -385,7 +444,6 @@ function extract(inputValue) {
     // BEGINNING OF CREATING VALUES FOR BUBBLE CHART PLOT RELATIVE CIRCLE SIZE
     // Set marker (circle) size with maximum relative value = 1000
     // Calculate maximum Sample Value across All Samples
-
     var assaysSamplesdata = samplesData.samples;
     console.log("--- testing assaysSamplesdata ---");
     console.log(assaysSamplesdata)
@@ -408,7 +466,7 @@ function extract(inputValue) {
     // relative to the absolute maximum value
 
     scaleValues = []
-    sampleValues.forEach(sampleValue => {
+    sampleValuesArrayZ.forEach(sampleValue => {
       var sampleScaleValueX = sampleValue / maxValueAbsolute * 1000;
       scaleValues.push(sampleScaleValueX);
     });
@@ -421,16 +479,18 @@ function extract(inputValue) {
 
     // BEGINNING OF CREATING BUBBLE CHART PLOT MARKER LABELS
     compositeLabels = [];
+    opacityArray = []
 
     console.log("--- ANOTHER DAMNED TEST ---");
     console.log(individualSampledata)
 
-    Object.values(individualSampledata).forEach(obj => {
+    Object.values(sampleAscendingIDs).forEach(obj => {
       var otuIdY = obj.otu_ids;
       var otuLabelY = obj.otu_labels;
       var sampleValueY = obj.sample_values;
       var compositeLabelY = `(OTU ID ${otuIdY}, Measured Value: ${sampleValueY})</br>${otuLabelY}`;
       compositeLabels.push(compositeLabelY);
+      opacityArray.push(.3);
     });
 
     console.log("--- testing compositeLabels ---");
@@ -440,13 +500,24 @@ function extract(inputValue) {
 
     // BEGINNING OF BUBBLE CHART PLOT
 
+
+    otuIdsArrayZ
+    otuLabelsArrayZ
+    sampleValuesArrayZ
+
+
     var trace1 = {
-      x: otuIds,
-      y: sampleValues,
-      text: otuLabels,
+      // x: [1,2,3,4],
+      // y: [10,11,12,13],
+      x: otuIdsArrayZ,
+      y: sampleValuesArrayZ,
+      text: otuLabelsArrayZ,
       mode: 'markers',
       marker: {
+        // color: ["#0000ff", "#0303fc", "#0606f9", "#0a0af5"],
         color: colorArray,
+        opacity: opacityArray,
+        // size: [40,60,80,100]
         size: scaleValues
       }
     };
@@ -454,7 +525,17 @@ function extract(inputValue) {
     var bubbleData = [trace1];
     
     var layout = {
-      title: 'Bubble Chart Hover Text',
+      title: '<b>Relative OTU Concentrations for Individual Subject',
+      xaxis: {
+        title: {
+          text: '<b>Operational Taxonomic Unit (OTU) ID'
+        }
+      },
+      yaxis: {
+        title: {
+          text: '<b>Standard Biota Measurement Units'
+        }
+      },      
       showlegend: false,
       height: 600,
       width: 1200
@@ -466,18 +547,11 @@ function extract(inputValue) {
 
   });
 
-  
 };
 
 
+// init();
   
-  
-
-
-
-
-
-
 
 
 
