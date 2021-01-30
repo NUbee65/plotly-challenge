@@ -195,7 +195,7 @@ function extract(inputValue) {
             color: '850000'
           }
         }],
-      title: '<b>Frequency</b> <br> Washes 0-9',
+      title: '<b>Belly Button Washing Frequency</b> <br>  Scrubs per Week 0-9',
       height: 600,
       width: 600,
       xaxis: {zeroline:false, showticklabels:false,
@@ -351,7 +351,11 @@ function extract(inputValue) {
       orientation: 'h'
     }];
 
-    Plotly.newPlot('bar', barData);
+    var layout = {
+      title: '<b>Belly Button Washing Frequency</b> <br>  Biota in Standard Units'    
+    };
+
+    Plotly.newPlot('bar', barData, layout);
     // END OF HORIZONTAL BAR CHART PLOT
     // ------------------------------------------------------------------------------------------------------
 
@@ -421,7 +425,7 @@ function extract(inputValue) {
     console.log("--- ANOTHER DAMNED TEST ---");
     console.log(individualSampledata)
 
-    individualSampledata.forEach(obj => {
+    Object.values(individualSampledata).forEach(obj => {
       var otuIdY = obj.otu_ids;
       var otuLabelY = obj.otu_labels;
       var sampleValueY = obj.sample_values;
