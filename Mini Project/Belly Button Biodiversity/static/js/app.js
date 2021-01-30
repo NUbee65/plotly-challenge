@@ -356,8 +356,7 @@ function extract(inputValue) {
     // ------------------------------------------------------------------------------------------------------
 
 
-    // BEGINNING OF BUBBLE CHART PLOT
-
+    // BEGINNING OF PREPARING BUBBLE CHART ARRAY OF COLORS FOR CIRCLES
     // Using a JS library called RainbowVis-JS, set the number of items using setNumberRange
     // and set the start and end colour using setSpectrum. Then you get the hex colour code 
     // with colourAt.
@@ -366,28 +365,30 @@ function extract(inputValue) {
     var rainbow = new Rainbow();
     var colorArray = [];
     rainbow.setNumberRange(1, numberOfItems);
-    rainbow.setSpectrum('red', 'blue');
+    rainbow.setSpectrum('blue', 'yellow');
     var s = '';
     for (var i = 1; i <= numberOfItems; i++) {
         var hexColour = rainbow.colourAt(i);
-        var colorCode = s += '#' + hexColour + ', ';
+        var colorCode = s + '#' + hexColour;
         colorArray.push(colorCode);
     }
     console.log(s);
     console.log(colorArray);
-    
-    // Set marker (circle) size with maximum relative value = 1000
+    // END OF PREPARING BUBBLE CHART ARRAY OF COLORS FOR CIRCLES
+    // ------------------------------------------------------------------------------------------------------
 
+
+    // BEGINNING OF CREATING VALUES FOR BUBBLE CHART PLOT RELATIVE CIRCLE SIZE
+    // Set marker (circle) size with maximum relative value = 1000
     // Calculate maximum Sample Value across All Samples
 
     var assaysSamplesdata = samplesData.samples;
     console.log("--- testing assaysSamplesdata ---");
     console.log(assaysSamplesdata)
 
-
     var maxSampleValues = [];
     assaysSamplesdata.forEach(sampleValuesArrayX => {
-      var maxSampleValueX =  Math.max(...sampleValuesArrayX);
+      var maxSampleValueX =  Math.max(...sampleValuesArrayX['sample_values']);
       maxSampleValues.push(maxSampleValueX);
     });
 
@@ -399,17 +400,51 @@ function extract(inputValue) {
     console.log("--- Maximum Sample Value Across All Samples ---");
     console.log(maxValueAbsolute);
 
+    // Create relative values maxing out at 1000 using the sample_values as inputs
+    // relative to the absolute maximum value
 
-    // Plot the bubble chart
+    scaleValues = []
+    sampleValues.forEach(sampleValue => {
+      var sampleScaleValueX = sampleValue / maxValueAbsolute * 1000;
+      scaleValues.push(sampleScaleValueX);
+    });
+
+    console.log("--- testing sampleScaleValues ---");
+    console.log(scaleValues);
+    // END OF CREATING VALUES FOR BUBBLE CHART PLOT RELATIVE CIRCLE SIZE
+    // ------------------------------------------------------------------------------------------------------
+
+
+    // BEGINNING OF CREATING VALUES FOR BUBBLE CHART PLOT MARKER LABELS
+
+    compositeLabels = [];
+
+    console.log("--- ANOTHER DAMNED TEST ---");
+    console.log(individualSampledata)
+
+    individualSampledata.forEach(obj => {
+      var otuIdY = obj.otu_ids;
+      var otuLabelY = obj.otu_labels;
+      var sampleValueY = obj.sample_values;
+      var compositeLabelY = `(OTU ID ${otuIdY}, Measured Value: ${sampleValueY})</br>${otuLabelY}`;
+      compositeLabels.push(compositeLabelY);
+    });
+
+    console.log("--- testing compositeLabels ---");
+    console.log(compositeLabels);
+
+    
+
+    // BEGINNING OF BUBBLE CHART PLOT
 
     var trace1 = {
-      x: [1, 2, 3, 4],
-      y: [10, 11, 12, 13],
-      text: ['A<br>size: 40', 'B<br>size: 60', 'C<br>size: 80', 'D<br>size: 100'],
+      x: otuIds,
+      y: sampleValues,
+      text: otuLabels,
       mode: 'markers',
       marker: {
-        color: ['rgb(93, 164, 214)', 'rgb(255, 144, 14)',  'rgb(44, 160, 101)', 'rgb(255, 65, 54)'],
-        size: [40, 60, 80, 100]
+        color: colorArray,
+        size: scaleValues
       }
     };
   
