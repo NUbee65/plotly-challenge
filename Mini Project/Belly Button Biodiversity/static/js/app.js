@@ -1,63 +1,63 @@
 // var url = "http://127.0.0:1:5000/samples"
 var url = "/samples"
 
-function init() {
-  console.log("--- PROOF THE INIT FUNCTION IS AWAKE ---");
-  // Receive lowestInputValue (lowest Subject ID value) from 
-  // calcLowestId() function (which starts on line 66), which itself is 
-  // inside function populateSelect() which starts on line 20.
-  // Then substitute the value of the above variable for inputValue, 
-  // which is used right from the get-go by the function extract(),
-  // which starts on line 95.
-  // We should use -- function updatePlotly() { -- when a dropdown item
-  // is selected.  Either an existing function needs to be renamed, or
-  // a new funtion with this name needs to be built.
-  // Once all that is done, I need to work on the CSS style sheet.
-  // The splash portion / container needs to be reformatted.
-  // The selector / metadata panel also needs to be reformatted.
-  // And then it all will need to be adapted for media queries.
-}
+// ------------------------------------------------------------------------------------------------------
+// BEGINNING OF PROOF OF BEING ABLE TO ACCESS VARIOUS PARTS OF THE DATASET
+// ------------------------------------------------------------------------------------------------------
+d3.json(url).then(function(samplesData) {
 
-// RESULTS FROM THIS OPERATION ON AN ARRAY ARE USED BY THE GUAGE PLOT BELOW
-var textArray = ['', '0-1', '1-2', '2-3', '3-4', '4-5', '5-6', '6-7', '7-8', '8-9'];
-reversedTextArray = textArray.reverse();
-console.log(reversedTextArray);
+  // PRINT / TEST the entire dataset to the console
+  // This shows 3 arrays each with 153 items
+  // One (names) is a simple array with values
+  // The other two (metadata, samples) are arrays of objects
+  // The samples array is an array of objects of arrays
+  console.log("--- testing Entire Dataset aka samplesData ---");
+  console.log(samplesData);
+
+  console.log("--- testing metadata ---");
+  console.log(samplesData.metadata);
+
+  console.log("--- testing samples ---");
+  console.log(samplesData.samples);
+
+  var subjectIds = samplesData['names'];
+  console.log("--- testing subjectIds ---");
+  console.log(subjectIds);
+});
+// END OF PROOF OF BEING ABLE TO ACCESS VARIOUS PARTS OF THE DATASET
 // ------------------------------------------------------------------------------------------------------
 
-function populateSelect() {
+
+// ------------------------------------------------------------------------------------------------------
+// BEGINNING OF INITIALIZATION FUNCTION init()
+// ------------------------------------------------------------------------------------------------------
+// This includes extracting Subject IDs and populating them into the Selector
+// This also includes choosing the default (starting) Subject IDs from which
+// the panel metadata and all graphs are driven.
+
+function init() {
 
   // Use D3 to capture the JSON data from the URL
   // which yields a nested object of arrays of objects
   // We also checked the data directly in Chrome with JSON viewer extension
   d3.json(url).then(function(samplesData) {
 
-    // PRINT / TEST the entire dataset to the console
-    // This shows 3 arrays each with 153 items
-    // One (names) is a simple array with values
-    // The other two (metadata, samples) are arrays of objects
-    // The samples array is an array of objects of arrays
-    console.log("--- testing Entire Dataset aka samplesData ---");
-    console.log(samplesData);
-
-    console.log("--- testing metadata ---");
-    console.log(samplesData.metadata);
-
-    console.log("--- testing samples ---");
-    console.log(samplesData.samples);
-
-    var subjectIds = samplesData['names'];
-    console.log("--- testing subjectIds ---");
-    console.log(subjectIds);    
-
     // Use D3 to select / alias the selector button and option field
-    var selectList = d3.select('#selDataset');
+    var dropdownSelector = d3.select('#selDataset');
 
-    // Iterate through each object 
-    subjectIds.forEach(item => {      
+    // Extract array of Subject IDs from the names key in the samplesData object
+    var subjectIds = samplesData['names'];
+
+    // Sort the Subject IDs in ascending order
+    var subjectIdsAscending = subjectIds.sort((a, b) => (a - b));
+
+    // Iterate through each Subject ID in the array (subjectIds) 
+    subjectIdsAscending.forEach(item => {      
 
       // Create a new option (drop down tag item)
-      // which is appended to the drop down selector 
-      var option = selectList.append('option');
+      // which is appended to the drop down selector
+      // Note: use of the method append() is permitted because it is modifying HTML
+      var option = dropdownSelector.append('option');
       
       // Copy the subjectID value to the option tag's visible text 
       // field and to the option tag's value field (hidden from view 
@@ -66,49 +66,38 @@ function populateSelect() {
       option.text(item).property("value", item);
     });
 
-    // CALCULATE LOWEST SUBJECT ID VALUE
-    var minSubjectId = Math.min(...subjectIds);
-    console.log("--- testing minSubjectId ---");
-    console.log(minSubjectId);
+    // Calculate lowest Subject ID value and assign that value to firstSampleId
+    var minSubjectId = Math.min(...subjectIdsAscending);    
+    var firstSampleId = minSubjectId;
+    console.log("--- testing firstSampleId ---");
+    console.log(firstSampleId);
 
-    function calcLowestId(){
-      var minSubjectId = Math.min(...subjectIds);
-      var lowestInputValue = minSubjectId;
-      console.log(lowestInputValue);
-      // CRITICAL: The calcLowestId function passes the captured input value to another function "init"
-      init(lowestInputValue);
-    }
-    calcLowestId();
+    // Alternative method for extracting firstSampleId
+    // var firstSampleId = subjectIdsAscending[0];
+
+    // CRITICAL: pass value of firstSampleId outside of init function 
+    // via function calls
+    buildMetadata(firstSampleId);
+    buildCharts(firstSampleId);
+
+  // Curly bracket in line below ends D3 JSON function
   });
-}
+};
+// END OF INITIALIZATION FUNCTION init()
 // ------------------------------------------------------------------------------------------------------
 
-populateSelect();
 
-// BEGINNING OF FUNCTION TO CAPTURE DROPDOWN VALUE SELECTED
-// Capture the inputValue from index.html, which has an embedded onchange listener
-// This means we don't have the listener identification and event trigger in this file, app.js
-// The html select object (#selDataset) triggers the named show() function >>> onchange="show(this.value)
-function show(value){
-  console.log("Value changed, aka input value, captured by show() function")
-  console.log(value);
-  // CRITICAL: The show function passes the captured input value to another function "extract"
-  extract(value);
-}
-// BEGINNING OF FUNCTION TO CAPTURE DROPDOWN VALUE SELECTED
+// ------------------------------------------------------------------------------------------------------
+// BEGINNING OF BUILDMETADATA FUNCTION buildMetadata()
+// ------------------------------------------------------------------------------------------------------
+// This builds and populates the Metadata Panel, and sends washing 
+// frequency value to the Guage Plot function buildGauge
 
-// BEGINNING OF FUNCTION TO USE DROPDOWN VALUE SELECTED
-// CRITICAL: The "extract" function carries over the input value passed by the "show" function
-function extract(inputValue) {
-  console.log("Input value received by the extract() function")
-  console.log(inputValue);
+function buildMetadata(sampleId) {
 
-  // BEGINNING OF DATA PROCESSING
-  d3.json(url).then(function(samplesData) {    
-
-    // BEGINNING METADATA DATA PROCESSING -- RETURN ONLY METADATA FOR SPECIFIED TEST SUBJECT
+  d3.json(url).then(function(samplesData) {
     var samplesMetadata = samplesData.metadata
-    var individualMetadata = samplesMetadata.filter(obj => obj.id == inputValue);
+    var individualMetadata = samplesMetadata.filter(obj => obj.id == sampleId);
     console.log("--- testing individualMetadata ---");
     console.log(individualMetadata);
 
@@ -125,6 +114,7 @@ function extract(inputValue) {
     var individualIDx = individualMetadata[0].id;
     
     console.log("--- testing individual metadata values ---");
+    console.log(individualIDx);
     
     var panelItem1 = (`AGE: ${individualAge}`);
     var panelItem2 = (`BBTYPE: ${individualBBtype}`);
@@ -132,8 +122,8 @@ function extract(inputValue) {
     var panelItem4 = (`GENDER: ${individualGender}`);
     var panelItem5 = (`LOCATION: ${individualLocation}`);
     var panelItem6 = (`WFREQ: ${individualWfreq}`);
-    var panelItem7 = (`sample: ${individualIDx}`);    
-
+    var panelItem7 = (`sample: ${individualIDx}`);  
+    
     panelKeysValues = [
       panelItem1,
       panelItem2,
@@ -144,14 +134,10 @@ function extract(inputValue) {
       panelItem7
     ];
 
+    console.log("--- testing panelKeysValues ---");
     console.log(panelKeysValues);
-    // END OF METADATA DATA PROCESSING
-    // ------------------------------------------------------------------------------------------------------
 
-
-    // BEGINNING OF POPULATING SELECTED SAMPLE METADATA INTO WEB PAGE PANEL
-    
-        // Identify the panel div by ID (metadata) and panel-body
+    // Identify the panel div by ID (metadata) and panel-body
     // and assign the HTML object it the variable name panelBody
     var panelBody = d3.select('#metadata');
 
@@ -164,80 +150,116 @@ function extract(inputValue) {
     panelKeysValues.forEach(item => {
       panelBody.append("h6").text(item);
     });    
-    // END OF POPULATING SELECTED SAMPLE METADATA INTO WEB PAGE PANEL
-    // ------------------------------------------------------------------------------------------------------
+
+    /* 
+    // Alternative method -- far superior IMHO
+    var result = individualMetadata[0]
+    Object.entries(result).forEach(([key,value]) => {
+      panelBody.append('h6').text(`${key.toUpperCase()}: ${value}`);
+    });
+    */
+
+    // CRITICAL: Pass individualWfreq (washington frequency) value to 
+    // AND activates the buildGauge() function below
+    buildGauge(individualWfreq);
+  
+  // Curly bracket in line below ends D3 JSON function
+  });
+};
+// END OF BUILDMETADATA FUNCTION buildMetadata()
+// ------------------------------------------------------------------------------------------------------
 
 
-    // BEGINNING OF GUAGE PLOT -- INCLUDING POPULATING SELECTED SAMPLE WFREQ INTO 
-    
-    // Enter a frequency between 0 and 9
-    var level = individualWfreq;
+// ------------------------------------------------------------------------------------------------------
+// BEGINNING OF BUILDGAUGE FUNCTION buildGauge()
+// ------------------------------------------------------------------------------------------------------
 
-    // Trig to calc meter point
-    var degrees = 180 - (level * 20),
-        radius = .5;
-    var radians = degrees * Math.PI / 180;
-    var x = radius * Math.cos(radians);
-    var y = radius * Math.sin(radians);
+// Results from resorting this array are used by the gauge plot below
+var textArray = ['', '0-1', '1-2', '2-3', '3-4', '4-5', '5-6', '6-7', '7-8', '8-9'];
+reversedTextArray = textArray.reverse();
+console.log(reversedTextArray);
 
-    // Path: may have to change to create a better triangle
-    var mainPath = 'M -.0 -0.025 L .0 0.025 L ',
-        pathX = String(x),
-        space = ' ',
-        pathY = String(y),
-        pathEnd = ' Z';
-    var path = mainPath.concat(pathX,space,pathY,pathEnd);
+function buildGauge(washFrequency) {
 
-    var data = [{ type: 'scatter',
-      x: [0], y:[0],
-        marker: {size: 28, color:'850000'},
-        showlegend: false,
-        name: 'washes',
-        text: level,
-        hoverinfo: 'text+name'},
-      { values: [50/9, 50/9, 50/9, 50/9, 50/9, 50/9, 50/9, 50/9, 50/9, 50],
-      rotation: 90,
-      text: reversedTextArray,
-      textinfo: 'text',
-      textposition:'inside',
-      marker: {colors:['rgba(102, 153, 153)', 'rgba(0, 153, 153, .5)',
-                      'rgba(51, 204, 204, .5)', 'rgba(0, 204, 255, .5)',
-                      'rgba(0, 153, 255, .5)', 'rgba(0, 102, 255, .5)',
-                      'rgba(51, 102, 255, .5)', 'rgba(51, 51, 204, .5)',
-                      'rgba(102, 102, 153, .5)', 'rgba(0, 153, 51, 0)',]},
-      labels: reversedTextArray,
-      hoverinfo: 'label',
-      hole: .5,
-      type: 'pie',
-      showlegend: false
-    }];
+   // Enter a frequency between 0 and 9
+   var level = washFrequency;
 
-    var layout = {
-      shapes:[{
-          type: 'path',
-          path: path,
-          fillcolor: '850000',
-          line: {
-            color: '850000'
-          }
-        }],
-      title: '<b>Belly Button Washing Frequency</b> <br>  Scrubs per Week 0-9',
-      height: 600,
-      width: 600,
-      xaxis: {zeroline:false, showticklabels:false,
-                showgrid: false, range: [-1, 1]},
-      yaxis: {zeroline:false, showticklabels:false,
-                showgrid: false, range: [-1, 1]}
-    };
+   // Trig to calc meter point
+   var degrees = 180 - (level * 20),
+       radius = .5;
+   var radians = degrees * Math.PI / 180;
+   var x = radius * Math.cos(radians);
+   var y = radius * Math.sin(radians);
 
-    Plotly.newPlot('gauge', data, layout);
-    // END OF GUAGE PLOT -- INCLUDING POPULATING SELECTED SAMPLE WFREQ INTO
-    // ------------------------------------------------------------------------------------------------------
+   // Path: may have to change to create a better triangle
+   var mainPath = 'M -.0 -0.025 L .0 0.025 L ',
+       pathX = String(x),
+       space = ' ',
+       pathY = String(y),
+       pathEnd = ' Z';
+   var path = mainPath.concat(pathX,space,pathY,pathEnd);
+
+   var data = [{ type: 'scatter',
+     x: [0], y:[0],
+       marker: {size: 28, color:'850000'},
+       showlegend: false,
+       name: 'washes',
+       text: level,
+       hoverinfo: 'text+name'},
+     { values: [50/9, 50/9, 50/9, 50/9, 50/9, 50/9, 50/9, 50/9, 50/9, 50],
+     rotation: 90,
+     text: reversedTextArray,
+     textinfo: 'text',
+     textposition:'inside',
+     marker: {colors:['rgba(102, 153, 153)', 'rgba(0, 153, 153, .5)',
+                     'rgba(51, 204, 204, .5)', 'rgba(0, 204, 255, .5)',
+                     'rgba(0, 153, 255, .5)', 'rgba(0, 102, 255, .5)',
+                     'rgba(51, 102, 255, .5)', 'rgba(51, 51, 204, .5)',
+                     'rgba(102, 102, 153, .5)', 'rgba(0, 153, 51, 0)',]},
+     labels: reversedTextArray,
+     hoverinfo: 'label',
+     hole: .5,
+     type: 'pie',
+     showlegend: false
+   }];
+
+   var layout = {
+     shapes:[{
+         type: 'path',
+         path: path,
+         fillcolor: '850000',
+         line: {
+           color: '850000'
+         }
+       }],
+     title: '<b>Belly Button Washing Frequency</b> <br>  Scrubs per Week 0-9',
+     height: 450,
+     width: 450,
+     xaxis: {zeroline:false, showticklabels:false,
+               showgrid: false, range: [-1, 1]},
+     yaxis: {zeroline:false, showticklabels:false,
+               showgrid: false, range: [-1, 1]}
+   };
+
+   Plotly.newPlot('gauge', data, layout);
+}
+// END OF BUILDGAUGE FUNCTION buildGauge()
+// ------------------------------------------------------------------------------------------------------
 
 
-    // BEGINNING ASSAY DATA PROCESSING -- RETURN ONLY ASSAY DATA FOR SPECIFIED TEST SUBJECT
+// ------------------------------------------------------------------------------------------------------// END OF BUILDGAUGE FUNCTION buildGauge()
+// BEGINNING OF BUILDCHARTS FUNCTION buildCharts()
+// ------------------------------------------------------------------------------------------------------
+function buildCharts(sampleId) {
+
+  d3.json(url).then(function(samplesData) {
+  
+    // SAMPLE DATASET PROCESSING
+    // ------------------------------------------------------------------
+
+    // Return only assay data for selected (or default) Subject ID
     var assaysSamplesdata = samplesData.samples
-    var assaysSampledataSlice = assaysSamplesdata.filter(obj => obj.id == inputValue);
+    var assaysSampledataSlice = assaysSamplesdata.filter(obj => obj.id == sampleId);
     var individualSampledata = assaysSampledataSlice[0];
     console.log("--- testing individualSampledata ---");
     console.log(individualSampledata);
@@ -247,64 +269,8 @@ function extract(inputValue) {
     var otuLabelsArray = individualSampledata.otu_labels;
     var sampleValuesArray = individualSampledata.sample_values;
 
-    // Test that we extacted simple Arrays
-    console.log("--- testing otuIdsArray ---");
-    console.log(otuIdsArray);
-    console.log("--- testing otuLabelsArray ---");
-    console.log(otuLabelsArray);
-    console.log("--- testing sampleValuesArray ---");
-    console.log(sampleValuesArray);
-
-    // Calculate the number of OTUs in a particular individualSampledata
-    var individualSampleLength = otuIdsArray.length;
-    console.log("--- testing individualSampleLength ---");
-    console.log(individualSampleLength);
-    
-    // Slice each of the 3 Arrays -- IN THIS CASE, THE DATASET WAS ALREADY SORTED
-    // WE ULTIMATELY DECIDED TO SORT THE DATASET AND VERIFY THE SORT (FURTHER BELOW)
-    var slicedOtuIdsArray = otuIdsArray.slice(0, 10);
-    var slicedOtuLabelsArray = otuLabelsArray.slice(0, 10);
-    var slicedSampleValuesArray = sampleValuesArray.slice(0, 10);
-
-    // Reversed slice each of the 3 Arrays
-    var ReversedSlicedOtuIds = slicedOtuIdsArray.reverse();
-    var ReversedSlicedOtuLabels = slicedOtuLabelsArray.reverse();
-    var ReversedSlicedSampleValues = slicedSampleValuesArray.reverse();
-
-    // Test that we correctly sliced and reversed the simple Arrays
-    console.log("--- testing ReversedSlicedOtuIds ---");
-    console.log(ReversedSlicedOtuIds);
-    console.log("--- testing ReversedSlicedOtuLabels ---");
-    console.log(ReversedSlicedOtuLabels);
-    console.log("--- testing ReversedSlicedSampleValues ---");
-    console.log(ReversedSlicedSampleValues);
-
-    // Further modify ReversedSlicedOtuIds by adding a text heading (OTU)
-    var modifiedOtuIds = [];
-    ReversedSlicedOtuIds.forEach(item => {      
-      modifiedOtuIds.push(`OTU ${item}`);
-    });
-
-    console.log("--- testing modifiedOtuIds ---");
-    console.log(modifiedOtuIds);
-
-    var maxSampleValue = Math.max(...sampleValuesArray);
-    var minSampleValue = Math.min(...sampleValuesArray);
-    
-    // Calculate lowest and highest single subject sample values
-    console.log("--- testing maxSampleValue ---");
-    console.log(maxSampleValue);
-    console.log("--- testing minSampleValue ---");
-    console.log(minSampleValue);
-
-    // SUPERIOR ALTERNATIVE PATH -- SORTS the data arrays in samples
-    
-    /*
-    var otuIdsArray = individualSampledata.otu_ids;
-    var otuLabelsArray = individualSampledata.otu_labels;
-    var sampleValuesArray = individualSampledata.sample_values;
-    */
-
+    // Reassemble the 3 simple Arrays into an Array of Objects
+    // This makes sorting coherent and less error prone
     var sampleArrayOfObjects = otuIdsArray.map((otuIdsArray, index) => {
       return {
         otu_ids: otuIdsArray,
@@ -314,6 +280,9 @@ function extract(inputValue) {
     });
     console.log("--- testing sampleArrayOfObjects ---");
     console.log(sampleArrayOfObjects)
+
+    // DATA PROCESSING SPECIFIC TO HORIZONTAL BAR CHART
+    // ------------------------------------------------------------------
 
     // PROOF that the sort operation works by sorting a descending dataset into an ascending one
     var ascendingSample = sampleArrayOfObjects.slice().sort((a, b) => (a.sample_values > b.sample_values) ? 1 : -1);
@@ -326,6 +295,8 @@ function extract(inputValue) {
     console.log(descendingSample);
 
     // EXTRACT an array for each of the keys in the Array of Objects
+    // Each of these 3 Arrays are now sorted by their sample_values in 
+    // descending order
     var otuIds = descendingSample.map(obj => obj.otu_ids);
     var otuLabels = descendingSample.map(obj => obj.otu_labels);
     var sampleValues = descendingSample.map(obj => obj.sample_values);
@@ -337,12 +308,13 @@ function extract(inputValue) {
     console.log("--- testing sampleValues Array ---");
     console.log(sampleValues);
 
-    // Slice each of the 3 Arrays
+    // Slice each of the 3 Arrays -- the top 10 greatest sample_values
     var slicedOtuIds = otuIds.slice(0, 10);
     var slicedOtuLabels = otuLabels.slice(0, 10);
     var slicedSampleValues = sampleValues.slice(0, 10);
 
     // Reversed slice each of the 3 Arrays
+    // Seemingly counterintuitive but necessary for the plotly horizontal bar plot
     var ReversedSlicedOtuIds2 = slicedOtuIds.reverse();
     var ReversedSlicedOtuLabels2 = slicedOtuLabels.reverse();
     var ReversedSlicedSampleValues2 = slicedSampleValues.reverse();
@@ -355,7 +327,7 @@ function extract(inputValue) {
     console.log("--- testing ReversedSlicedSampleValues ---");
     console.log(ReversedSlicedSampleValues2);
 
-    // Further modify ReversedSlicedOtuIds by adding a text heading (OTU)
+    // Further modify ReversedSlicedOtuIds by concatenating a text heading (OTU)
     var modifiedOtuIds2 = [];
     ReversedSlicedOtuIds2.forEach(item => {      
       modifiedOtuIds2.push(`OTU ${item}`);
@@ -364,48 +336,30 @@ function extract(inputValue) {
     console.log("--- testing modifiedOtuIds2 ---");
     console.log(modifiedOtuIds2);
 
+    // CALCULATE THE NUMBER OF OTUS FOR AN INDIVIDUAL SUBJECT'S SAMPLE
+    // ------------------------------------------------------------------
 
-    // END OF ASSAY DATA PROCESSING -- RETURN ONLY ASSAY DATA FOR SPECIFIED TEST SUBJECT
-    // ------------------------------------------------------------------------------------------------------
+    var individualSampleLength = otuIdsArray.length;
+    console.log("--- testing individualSampleLength ---");
+    console.log(individualSampleLength);
+    
+    
+    // CALCULATE MAX AND MIN MEASUREMENT VALUES FOR AN INDIVIDUAL SUBJECT'S SAMPLE
+    // ------------------------------------------------------------------
+        
+    var maxSampleValue = Math.max(...sampleValuesArray);
+    var minSampleValue = Math.min(...sampleValuesArray);
+        
+    console.log("--- testing maxSampleValue ---");
+    console.log(maxSampleValue);
+    console.log("--- testing minSampleValue ---");
+    console.log(minSampleValue);
 
-
-    // BEGINNING OF HORIZONTAL BAR CHART PLOT
-    var barData = [{
-      type: 'bar',    
-      x: ReversedSlicedSampleValues2,
-      y: modifiedOtuIds2,
-      orientation: 'h'
-    }];
-
-    var layout = {
-      title: '<b>Belly Button Washing Frequency</b> <br>  Biota in Standard Units'    
-    };
-
-    Plotly.newPlot('bar', barData, layout);
-    // END OF HORIZONTAL BAR CHART PLOT
-    // ------------------------------------------------------------------------------------------------------
-
-
-    // BEGINNING OF PREPARING BUBBLE CHART ARRAY OF COLORS FOR CIRCLES
-    // Using a JS library called RainbowVis-JS, set the number of items using setNumberRange
-    // and set the start and end colour using setSpectrum. Then you get the hex colour code 
-    // with colourAt.
-
-    var numberOfItems = individualSampleLength;
-    var rainbow = new Rainbow();
-    var colorArray = [];
-    rainbow.setNumberRange(1, numberOfItems);
-    rainbow.setSpectrum('blue', 'green');
-    var s = '';
-    for (var i = 1; i <= numberOfItems; i++) {
-        var hexColour = rainbow.colourAt(i);
-        var colorCode = s + '#' + hexColour;
-        colorArray.push(colorCode);
-    }
-    console.log(s);
-    console.log(colorArray);
+    // DATA PROCESSING SPECIFIC TO BUBBLE CHART
+    // ------------------------------------------------------------------
 
     // SORT the dataset (Array of Objects) by one key (otu_ids) in ascending order
+    // CRITICAL: to ensure colors transition laterally across the OTU IDs axis
     var sampleAscendingIDs = sampleArrayOfObjects.slice().sort((a, b) => (a.otu_ids > b.otu_ids) ? 1 : -1)
     console.log("--- testing sampleAscendingIDs ---");
     console.log(sampleAscendingIDs);
@@ -414,7 +368,7 @@ function extract(inputValue) {
     var otuIdsArrayZ = sampleAscendingIDs.map(obj => obj.otu_ids);
     var otuLabelsArrayZ = sampleAscendingIDs.map(obj => obj.otu_labels);
     var sampleValuesArrayZ = sampleAscendingIDs.map(obj => obj.sample_values);
-    
+
     console.log("--- testing otuIdsArrayZ ---");
     console.log(otuIdsArrayZ);
     console.log("--- testing otuLabelsArrayZ ---");
@@ -422,26 +376,10 @@ function extract(inputValue) {
     console.log("--- testing sampleValuesArrayZ ---");
     console.log(sampleValuesArrayZ);
 
-    /* TOTALLY UNNECESSARY. IT WAS REDUNDANT AND CLUNKY.  GOOD LEARNING EXPERIENCE.
-    // Zipping / merging sorted arrays back together while appending colorArray
-    // Critical to ensure scaled colors assigned are ordered according to ascending otu_ids
-    var sampleAofOwColor = sampleAscendingIDs.map((otuIdsArrayZ, index) => {
-      return {
-        otu_ids: otuIdsArrayZ,
-        otu_labels: otuLabelsArrayZ[index],
-        sample_values: sampleValuesArrayZ[index],
-        color_ids: colorArray[index]
-      }
-    });
-    console.log("--- testing sampleAofOwColor ---");
-    console.log(sampleAofOwColor)
-    */
 
-    // END OF PREPARING BUBBLE CHART ARRAY OF COLORS FOR CIRCLES
-    // ------------------------------------------------------------------------------------------------------
+    // CREATE SCALAR VALUES FOR BUBBLE CHART PLOT RELATIVE CIRCLE SIZE
+    // ------------------------------------------------------------------
 
-
-    // BEGINNING OF CREATING VALUES FOR BUBBLE CHART PLOT RELATIVE CIRCLE SIZE
     // Set marker (circle) size with maximum relative value = 1000
     // Calculate maximum Sample Value across All Samples
     var assaysSamplesdata = samplesData.samples;
@@ -473,38 +411,61 @@ function extract(inputValue) {
 
     console.log("--- testing sampleScaleValues ---");
     console.log(scaleValues);
-    // END OF CREATING VALUES FOR BUBBLE CHART PLOT RELATIVE CIRCLE SIZE
-    // ------------------------------------------------------------------------------------------------------
+    
 
+    // PREPARE BUBBLE CHART ARRAY OF COLORS AND OPACITY VALUES FOR CIRCLES
+    // ------------------------------------------------------------------
 
-    // BEGINNING OF CREATING BUBBLE CHART PLOT MARKER LABELS
-    compositeLabels = [];
-    opacityArray = []
+    // Using a JS library called RainbowVis-JS, set the number of items using setNumberRange
+    // and set the start and end colour using setSpectrum. Then you get the hex colour code 
+    // with colourAt.
 
-    console.log("--- ANOTHER DAMNED TEST ---");
-    console.log(individualSampledata)
+    var numberOfItems = individualSampleLength;
+    var rainbow = new Rainbow();
+    var colorArray = [];
+    rainbow.setNumberRange(1, numberOfItems);
+    rainbow.setSpectrum('blue', 'green');
+    var s = '';
+    for (var i = 1; i <= numberOfItems; i++) {
+        var hexColour = rainbow.colourAt(i);
+        var colorCode = s + '#' + hexColour;
+        colorArray.push(colorCode);
+    }
+    console.log(s);
+    console.log(colorArray);
 
-    Object.values(sampleAscendingIDs).forEach(obj => {
-      var otuIdY = obj.otu_ids;
-      var otuLabelY = obj.otu_labels;
-      var sampleValueY = obj.sample_values;
-      var compositeLabelY = `(OTU ID ${otuIdY}, Measured Value: ${sampleValueY})</br>${otuLabelY}`;
-      compositeLabels.push(compositeLabelY);
+    // The bubble chart required an array of values for opacity
+    // instead of being able to assign a single value
+    // I am fully aware that this is kind of a hack.
+    opacityArray = [];    
+    Object.values(sampleAscendingIDs).forEach(obj => {      
       opacityArray.push(.3);
     });
 
-    console.log("--- testing compositeLabels ---");
-    console.log(compositeLabels);
-    // END OF CREATING BUBBLE CHART PLOT MARKER LABELS
-    
-
-    // BEGINNING OF BUBBLE CHART PLOT
+    console.log("--- testing opacityArray ---");
+    console.log(opacityArray);
 
 
-    otuIdsArrayZ
-    otuLabelsArrayZ
-    sampleValuesArrayZ
+    // HORIZONTAL BAR CHART PLOT
+    // ------------------------------------------------------------------
+    var barData = [{
+      type: 'bar',    
+      x: ReversedSlicedSampleValues2,
+      y: modifiedOtuIds2,
+      orientation: 'h',
+      marker: {color: 'royalblue'}
+    }];
 
+    var layout = {
+      title: '<b>Belly Button Washing Frequency</b> <br>  Biota in Standard Units',
+      xaxis: {autorange: true}
+    };
+
+    Plotly.newPlot('bar', barData, layout);
+
+
+    // BUBBLE CHART PLOT
+    // ------------------------------------------------------------------
 
     var trace1 = {
       // x: [1,2,3,4],
@@ -542,47 +503,25 @@ function extract(inputValue) {
     };
     
     Plotly.newPlot('bubble', bubbleData, layout);
-    // END OF BUBBLE CHART PLOT
-    // ------------------------------------------------------------------------------------------------------
 
+  // Curly bracket in line below ends D3 JSON function
   });
-
 };
+// END OF BUILDCHARTS FUNCTION buildCharts()
+// ------------------------------------------------------------------------------------------------------
 
 
-// init();
+// ------------------------------------------------------------------------------------------------------// END OF BUILDGAUGE FUNCTION buildGauge()
+// BEGINNING OF OPTIONCHANGED FUNCTION optionChanged()
+// ------------------------------------------------------------------------------------------------------
+function optionChanged(newSampleId) {
+  console.log("Sample ID value changed, aka input value, captured by optionChanged() function")
+  console.log(newSampleId);
   
+  buildCharts(newSampleId);
+  buildMetadata(newSampleId);
+};
+// END OF OPTIONCHANGED FUNCTION optionChanged()
+// ------------------------------------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Identify web element(s) on the page
-// selectbtn = d3.select('#selDataset');
-
-// Add event listeners to the web elements
-// selectbtn.on('change', show);
+init();
